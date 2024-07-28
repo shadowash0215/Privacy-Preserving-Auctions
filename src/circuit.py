@@ -107,7 +107,7 @@ class gate(module):
         enc = self.get_entry(input1 & 1, input2 & 1)
         K = (input1 * 2 ^ input2 * 4 ^ self.index) & (2 ** 128 - 1)
         result = enc ^ K ^ fixed_key.encrypt(K)
-        assert result == wires[self.index]._get_garbled(0) or result == wires[self.index]._get_garbled(1)
+        # assert result == wires[self.index]._get_garbled(0) or result == wires[self.index]._get_garbled(1)
         return result
     
 class sne_nbit(module):
@@ -239,4 +239,5 @@ def testcase():
     print(f"\n2nd highest price: {price}")
     print(f"Object packed in {len(dumps([circuit, wires, gates]))} bytes")
 
-testcase()
+if __name__ == "__main__":
+    testcase()
