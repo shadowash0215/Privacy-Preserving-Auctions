@@ -14,7 +14,8 @@ def getrandbits(nbits):
 class fixed_key:
 
     global key, aes
-    key = urandom(16)
+    # key = urandom(16)
+    key = b'\xef\x8a]\xfe\x98\xeb\xbe\xefM\xf3{;\xd6\xf92\xd6'
     aes = AES.new(key, AES.MODE_ECB)
 
     def encrypt(input):
@@ -35,7 +36,7 @@ class wire:
     def _de_garbled(self, value):
         if self.value_table[0] == value: return 0
         if self.value_table[1] == value: return 1
-        return -1
+        raise ValueError("Invalid garbled value")
     
     def get_index(self):
         return self.index

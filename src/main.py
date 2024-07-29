@@ -14,7 +14,7 @@ mbidders = 8
 nbits = 8
 
 def int2nbitlist(num, nbits):
-    num = bin(num)[2:].zfill(nbits)
+    num = bin(num)[2:].zfill(nbits)[::-1]
     return [int(x) for x in num]
 
 class Proxy:
