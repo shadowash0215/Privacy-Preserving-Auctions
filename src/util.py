@@ -56,10 +56,9 @@ def xor_bytes(seq1, seq2):
     """XOR two byte sequence."""
     return bytes(map(operator.xor, seq1, seq2))
 
-
-def bits(num, width):
-    """Convert number into a list of bits."""
-    return [int(k) for k in f'{num:0{width}b}']
+def int2nbitlist(num, nbits):
+    num = bin(num)[2:].zfill(nbits)[::-1]
+    return [int(x) for x in num]
 
 def get_prime_and_gen():
     ElGamalSystem = ElGamal.generate(512, get_random_bytes)

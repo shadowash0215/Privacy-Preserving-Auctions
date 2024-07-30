@@ -5,16 +5,15 @@ from Crypto.Util.number import bytes_to_long, long_to_bytes
 
 class ProxyObliviousTransfer:
 
-    def __init__(self, socket1: util.Socket, socket2: util.Socket, enabled=True, group=None):
-        self.socket1 = socket1
-        self.socket2 = socket2
+    def __init__(self, socket1: util.Socket, socket2: util.Socket):
         """
         For the Proxy, the first socket is the one connected to the Chooser and the second one is connected to the Sender.
         For the Chooser, the first socket is the one connected to the Proxy and the second one is connected to the Sender.
         For the Sender, the first socket is the one connected to the Proxy and the second one is connected to the Chooser.
         """
-        self.enabled = enabled
-        self.group = group
+        self.socket1 = socket1
+        self.socket2 = socket2
+        self.group = None
 
     def send_choice(self, bidder_id, choice: list):
         """Chooser sends its choice to the Sender and Proxy.
@@ -36,9 +35,7 @@ class ProxyObliviousTransfer:
         for index in range(len(choice)):
             logging.debug(f"Send wire ID {index + bidder_id * len(choice)} to Sender")
             self.socket2.send(index + bidder_id * len(choice))
-
-            if self.enabled:
-                self.pot_chooser(choice[index])
+            self.pot_chooser(choice[index])
 
     def pot_chooser(self, b):
         """Proxy Oblivious transfer, Chooser's side.
@@ -64,15 +61,15 @@ class ProxyObliviousTransfer:
     def send_msg(self, nbits, wires: list):
         """Sender sends messages to the Proxy."""
         logging.debug("Generating prime group to use for Proxy OT")
-        self.group = self.enabled and (self.group or util.PrimeGroup())
+        self.group = self.group or util.PrimeGroup()
         logging.debug("Sending prime group")
         self.socket1.send(self.group)
         self.socket1.receive()
 
         bidder_id = self.socket2.receive()
+        logging.debug(f"Receive bidder ID {bidder_id}")
         self.socket2.send(self.group)
         
-
         for _ in range(nbits):
             # receive wire_id from chooser
             wire_id = self.socket2.receive()
@@ -82,9 +79,7 @@ class ProxyObliviousTransfer:
                 error_detect = hashlib.sha256(originmsg[k]).digest()
                 msg.append(error_detect + originmsg[k])
             pair = tuple(msg)
-            
-            if self.enabled:
-                self.pot_sender(pair)
+            self.pot_sender(pair)
 
     def pot_sender(self, msgs):
         """Proxy Oblivious transfer, Sender's side.
