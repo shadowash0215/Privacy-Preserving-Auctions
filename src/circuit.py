@@ -8,12 +8,11 @@ def getrandbits(nbits):
 
 class fixed_key:
 
-    global key, aes
-    # key = urandom(16)
-    key = b'\xef\x8a]\xfe\x98\xeb\xbe\xefM\xf3{;\xd6\xf92\xd6'
-    aes = AES.new(key, AES.MODE_ECB)
-
-    def encrypt(input):
+    def __init__(self):
+        self.key = urandom(16)
+    
+    def encrypt(self, input):
+        aes = AES.new(self.key, AES.MODE_ECB)
         return bytes_to_long(aes.encrypt(long_to_bytes(input).zfill(16)))
 
 class wire:
@@ -64,6 +63,7 @@ class gate(module):
         self.index = output.index
         self.i1 = index1
         self.i2 = index2
+        self.prng = fixed_key()
         for i in range(2):
             for j in range(2):
                 X_a = input1.value_table[i]
@@ -71,8 +71,8 @@ class gate(module):
                 X_c = output._get_garbled(func(i, j))
                 K = (X_a * 2 ^ X_b * 4 ^ self.index) & (2 ** 128 - 1)
                 # print(f"K = {K}")
-                self.garbled_table[(X_a & 1, X_b & 1)] = fixed_key.encrypt(K) ^ K ^ X_c
-                # print(f"{(X_a, X_b)}: {fixed_key.encrypt(K) ^ K ^ X_c}")
+                self.garbled_table[(X_a & 1, X_b & 1)] = self.prng.encrypt(K) ^ K ^ X_c
+                # print(f"{(X_a, X_b)}: {self.prng.encrypt(K) ^ K ^ X_c}")
         gates[self.index] = self
 
     def recursive_evaluate(self, inputs:dict):
@@ -102,7 +102,7 @@ class gate(module):
     def evaluate(self, input1, input2):
         enc = self.get_entry(input1 & 1, input2 & 1)
         K = (input1 * 2 ^ input2 * 4 ^ self.index) & (2 ** 128 - 1)
-        result = enc ^ K ^ fixed_key.encrypt(K)
+        result = enc ^ K ^ self.prng.encrypt(K)
         return result
     
 class sne_nbit(module):
