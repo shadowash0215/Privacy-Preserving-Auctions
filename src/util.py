@@ -1,6 +1,5 @@
 import operator
 import random
-from hashlib import sha256
 import zmq
 from Crypto.PublicKey import ElGamal
 from Crypto.Random import get_random_bytes

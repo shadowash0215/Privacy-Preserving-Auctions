@@ -1,12 +1,7 @@
 from os import urandom
-from functools import reduce
-from pickle import loads, dumps
+from pickle import dumps
 from Crypto.Cipher import AES
 from Crypto.Util.number import bytes_to_long, long_to_bytes
-
-wires = []
-gates = {}
-memory = {}
 
 def getrandbits(nbits):
     return bytes_to_long(urandom((nbits + 7) >> 3)) >> (7 - ((nbits - 1) & 7))  
@@ -19,7 +14,7 @@ class fixed_key:
     aes = AES.new(key, AES.MODE_ECB)
 
     def encrypt(input):
-        return bytes_to_long(aes.encrypt(long_to_bytes(input).rjust(16, b'\x00')))
+        return bytes_to_long(aes.encrypt(long_to_bytes(input).zfill(16)))
 
 class wire:
 
@@ -42,11 +37,12 @@ class wire:
         return self.index
 
 class module:
-    def __init__(self, inputs: list):
-        self.inputs = inputs
-        self.outputs = []
-        self.gates = []
-        self.modules = []
+
+    global gates, wires, memory
+
+    wires = []
+    gates = {}
+    memory = {}
 
     def get_outputs(self) -> list:
         return self.outputs
@@ -61,7 +57,6 @@ class gate(module):
 
     def __init__(self, index1: int, index2: int, func):
         global wires, gates
-        super().__init__([index1, index2])
         input1 = wires[index1]
         input2 = wires[index2]
         self.garbled_table = {}
@@ -81,6 +76,7 @@ class gate(module):
         gates[self.index] = self
 
     def recursive_evaluate(self, inputs:dict):
+        global memory
         if self.get_index() in memory:
             return memory[self.get_index()]
         input1 = None
@@ -104,68 +100,70 @@ class gate(module):
         return self.index
 
     def evaluate(self, input1, input2):
-        global wires
         enc = self.get_entry(input1 & 1, input2 & 1)
         K = (input1 * 2 ^ input2 * 4 ^ self.index) & (2 ** 128 - 1)
         result = enc ^ K ^ fixed_key.encrypt(K)
-        # assert result == wires[self.index]._get_garbled(0) or result == wires[self.index]._get_garbled(1)
         return result
     
 class sne_nbit(module):
     def __init__(self, nbits:int, input1: list, input2: list):
         assert len(input1) == nbits, "length error!"
         assert len(input2) == nbits, "length error!"
-        super().__init__(input1 + input2)
-        self.gates.append(gate(input1[0], input2[0], lambda a, b: a ^ b))
+        self.outputs = []
+        temp_gates = []
+        temp_gates.append(gate(input1[0], input2[0], lambda a, b: a ^ b))
         for i in range(1, nbits):
             g1 = gate(input1[i], input2[i], lambda a, b: a ^ b)
-            g2 = gate(g1.get_index(), self.gates[-1].get_index(), lambda a, b: a or b)
-            self.gates.append(g1)
-            self.gates.append(g2)
-        self.outputs.append(self.gates[-1].get_index())
+            g2 = gate(g1.get_index(), temp_gates[-1].get_index(), lambda a, b: a or b)
+            temp_gates.append(g1)
+            temp_gates.append(g2)
+        self.outputs.append(temp_gates[-1].get_index())
 
 class slt_nbit(module):
 
     def __init__(self, nbits:int, input1: list, input2: list):
         assert len(input1) == nbits, "length error!"
         assert len(input2) == nbits, "length error!"
-        super().__init__(input1 + input2)
-        self.gates.append(gate(input1[0], input2[0], lambda a, b: not a and b))
+        self.outputs = []
+        temp_gates = []
+        temp_gates.append(gate(input1[0], input2[0], lambda a, b: not a and b))
         for i in range(1, nbits):
             g1 = gate(input1[i], input2[i], lambda a, b: not a and b)
             g2 = gate(input1[i], input2[i], lambda a, b: not (a ^ b))
-            g3 = gate(g2.get_index(), self.gates[-1].get_index(), lambda a, b: a and b)
+            g3 = gate(g2.get_index(), temp_gates[-1].get_index(), lambda a, b: a and b)
             g4 = gate(g1.get_index(), g3.get_index(), lambda a, b: a or b)
-            self.gates.append(g1)
-            self.gates.append(g2)
-            self.gates.append(g3)
-            self.gates.append(g4)
-        self.outputs.append(self.gates[-1].get_index())
+            temp_gates.append(g1)
+            temp_gates.append(g2)
+            temp_gates.append(g3)
+            temp_gates.append(g4)
+        self.outputs.append(temp_gates[-1].get_index())
 
 class and_nbit(module):
 
     def __init__(self, nbits:int, input1: list, input2: list):
         assert len(input1) == nbits, "length error!"
         assert len(input2) == nbits, "length error!"
-        super().__init__(input1 + input2)
+        self.outputs = []
+        temp_gates = []
         for i in range(nbits):
             g1 = gate(input1[i], input2[i], lambda a, b: a and b)
-            self.gates.append(g1)
-            self.outputs.append(self.gates[-1].get_index())
+            temp_gates.append(g1)
+            self.outputs.append(temp_gates[-1].get_index())
 
 class mux2_nbit(module):
 
     def __init__(self, nbits:int, input1: list, input2: list, sel):
         assert len(input1) == nbits, "length error!"
         assert len(input2) == nbits, "length error!"
-        super().__init__(input1 + input2 + [sel])
+        self.outputs = []
+        temp_gates = []
         for i in range(nbits):
             g1 = gate(input1[i], sel, lambda a, b: a and not b)
             g2 = gate(input2[i], sel, lambda a, b: a and b)
             g3 = gate(g1.get_index(), g2.get_index(), lambda a, b: a or b)
-            self.gates.append(g1)
-            self.gates.append(g2)
-            self.gates.append(g3)
+            temp_gates.append(g1)
+            temp_gates.append(g2)
+            temp_gates.append(g3)
             self.outputs.append(g3.get_index())
 
 class max_nbit(module):
@@ -173,40 +171,43 @@ class max_nbit(module):
     def __init__(self, nbits: int, input1: list, input2: list):
         assert len(input1) == nbits, "length error!"
         assert len(input2) == nbits, "length error!"
-        super().__init__(input1 + input2)
-        self.modules.append(slt_nbit(nbits, input1, input2))
-        sel = self.modules[-1].get_outputs()[0]
-        self.modules.append(mux2_nbit(nbits, input1, input2, sel))
-        self.outputs = self.modules[-1].get_outputs()[::]
+        self.outputs = []
+        temp_modules = []
+        temp_modules.append(slt_nbit(nbits, input1, input2))
+        sel = temp_modules[-1].get_outputs()[0]
+        temp_modules.append(mux2_nbit(nbits, input1, input2, sel))
+        self.outputs = temp_modules[-1].get_outputs()[::]
 
 class maxm_nbit(module):
 
     def __init__(self, nbits: int, inputs: list):
         m = len(inputs)
         assert len(inputs[0]) == nbits, "length error!"
-        super().__init__(reduce(lambda a, b: a + b, inputs))
+        self.outputs = []
+        temp_modules = []
         premax = inputs[0]
         for i in range(1, m):
             assert len(inputs[i]) == nbits, "length error!"
-            self.modules.append(max_nbit(nbits, premax, inputs[i]))
-            premax = self.modules[-1].get_outputs()[::]
+            temp_modules.append(max_nbit(nbits, premax, inputs[i]))
+            premax = temp_modules[-1].get_outputs()[::]
         self.outputs = premax[::]
 
 class max2ndm_nbit(module):
 
     def __init__(self, nbits: int, inputs: list):
-        super().__init__(reduce(lambda a, b: a + b, inputs))
-        self.modules.append(maxm_nbit(nbits, inputs))
-        maxm = self.modules[-1].get_outputs()[::]
+        self.outputs = []
+        temp_modules = []
+        temp_modules.append(maxm_nbit(nbits, inputs))
+        maxm = temp_modules[-1].get_outputs()[::]
         inputs2nd = []
         for input in inputs:
-            self.modules.append(sne_nbit(nbits, maxm, input))
-            notmax = self.modules[-1].get_outputs()[0]
+            temp_modules.append(sne_nbit(nbits, maxm, input))
+            notmax = temp_modules[-1].get_outputs()[0]
             self.outputs.append(notmax)
-            self.modules.append(and_nbit(nbits, input, [notmax] * nbits))
-            inputs2nd.append(self.modules[-1].get_outputs()[::])
-        self.modules.append(maxm_nbit(nbits, inputs2nd))
-        self.outputs += self.modules[-1].get_outputs()[::]
+            temp_modules.append(and_nbit(nbits, input, [notmax] * nbits))
+            inputs2nd.append(temp_modules[-1].get_outputs()[::])
+        temp_modules.append(maxm_nbit(nbits, inputs2nd))
+        self.outputs += temp_modules[-1].get_outputs()[::]
 
 def testcase():
     mbidder = 8

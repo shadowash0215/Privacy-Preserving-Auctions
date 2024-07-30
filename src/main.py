@@ -138,8 +138,7 @@ def main(
         for _ in range(mbidders):
             bids.append(random.getrandbits(nbits))
 
-        bids.sort(reverse=True)
-        print(bids)
+        print(f"bids: {bids}")
 
         for i in range(mbidders):
             chooser = Chooser(Proxy_Chooser_PORT, Chooser_Sender_PORT, bids[i], i)
@@ -168,22 +167,9 @@ if __name__ == '__main__':
         parser.add_argument("party",
                             choices=["sender", "chooser", "proxy"],
                             help="the proxy OT party to run")
-        # parser.add_argument(
-        #     "-c",
-        #     "--circuit",
-        #     metavar="circuit.json",
-        #     default="circuits/default.json",
-        #     help=("the JSON circuit file for alice and local tests"),
-        # )
         # parser.add_argument("--no-oblivious-transfer",
         #                     action="store_true",
         #                     help="disable oblivious transfer")
-        # parser.add_argument(
-        #     "-m",
-        #     metavar="mode",
-        #     choices=["circuit", "table"],
-        #     default="circuit",
-        #     help="the print mode for local tests (default 'circuit')")
         parser.add_argument("-l",
                             "--loglevel",
                             metavar="level",
@@ -193,9 +179,7 @@ if __name__ == '__main__':
 
         main(
             party=parser.parse_args().party,
-            # circuit_path=parser.parse_args().circuit,
             # oblivious_transfer=not parser.parse_args().no_oblivious_transfer,
-            # print_mode=parser.parse_args().m,
             loglevel=loglevels[parser.parse_args().loglevel],
         )
 
