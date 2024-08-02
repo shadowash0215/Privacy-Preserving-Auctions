@@ -1,0 +1,7 @@
+\section{Results}
+
+最终我们选择使用 Python 复现这一机制，因为 Python 的密码库以及套接字通信库均较为成熟。\href{https://github.com/shadowash0215/Privacy-Preserving-Auctions/blob/master/src/util.py}{util.py} 中实现的是套接字对象，素数群对象以及部分的辅助函数，参考自 \href{https://github.com/ojroques/garbled-circuit}{Yao's Garbled Circuit} 中的实现，并对素数群的安全性进行了改进。\href{https://github.com/shadowash0215/Privacy-Preserving-Auctions/blob/master/src/circuit.py}{circuit.py} 中我们自行实现了导线对象，逻辑门对象，在此基础上构建的元件以及最后能够计算出结果的电路。\href{https://github.com/shadowash0215/Privacy-Preserving-Auctions/blob/master/src/pot.py}{pot.py} 中自行实现了代理不经意传输协议，而 \href{https://github.com/shadowash0215/Privacy-Preserving-Auctions/blob/master/src/main.py}{main.py} 中实现了 Proxy, Chooser, Sender 三个类，分别对应于拍卖的三个角色，并且在本地测试了这一机制的正确性，支持 $100$ 人参与的金额上限为 $2^{64} - 1$ 的拍卖。 
+
+Demo 运行需要安装 Crypto 库与 pyzmq 库，执行 \verb|python main.py <Role> -l <loglevel>| 即可运行，其中 \verb|<Role>| 为 Proxy, Chooser, Sender 三者之一，\verb|<loglevel>| 为日志等级，可选项为 DEBUG, INFO, WARNING, ERROR, CRITICAL。
+
+但我们的实现依然有不充分之处，如前提到的为了简化而允许了竞拍人和拍卖发行人之间的直接通信，竞拍人的 Denial of service attack 并未能完全解决，电路与协议的设计也有待进一步完善等等，这些都是可以后续优化的地方。
