@@ -5,3 +5,67 @@
   pages={129--139},
   year={1999}
 }
+@inproceedings{Juels2002,
+author = {Juels, Ari and Szydlo, Michael},
+year = {2002},
+month = {03},
+pages = {72-86},
+title = {A Two-Server, Sealed-Bid Auction Protocol},
+booktitle = {Financial Cryptography},
+isbn = {978-3-540-00646-6},
+doi = {10.1007/3-540-36504-4_6}
+}
+@InProceedings{Lipmaa2003,
+author="Lipmaa, Helger
+and Asokan, N.
+and Niemi, Valtteri",
+editor="Blaze, Matt",
+title="Secure Vickrey Auctions without Threshold Trust",
+booktitle="Financial Cryptography",
+year="2003",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="87--101",
+abstract="We argue that threshold trust is not an option in most of the real-life electronic auctions. We then propose two new cryptographic Vickrey auction schemes that involve, apart from the bidders and the seller S, an auction authority A so that unless S and A collude the outcome of auctions will be correct, and moreover, S will not get any information about the bids, while A will learn bid statistics. Further extensions make it possible to decrease damage that colluding S and A can do, and to construct (m + l)st price auction schemes. The communication complexity between the S and A in medium-size auctions is at least one order of magnitude less than in the Naor-Pinkas-Sumner scheme.",
+isbn="978-3-540-36504-4"
+}
+@InProceedings{Abe2002,
+author="Abe, Masayuki
+and Suzuki, Koutarou",
+editor="Naccache, David
+and Paillier, Pascal",
+title="M + 1-st Price Auction Using Homomorphic Encryption",
+booktitle="Public Key Cryptography",
+year="2002",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="115--124",
+abstract="This paper provides a M + 1-st price auction scheme using homomorphic encryption and the mix and match technique; it offers secrecy of bidding price and public verifiability. Our scheme has low round communication complexity: 1 round from each bidder to auctioneer in bidding and log p rounds from auctioneer to trusted authority in opening when prices are selected from p prefixed choices.",
+isbn="978-3-540-45664-3"
+}
+@inproceedings{Palmer2011,
+author = {Palmer, Ben and Bubendorfer, Kris and Welch, Ian},
+title = {Development and evaluation of a secure, privacy preserving combinatorial auction},
+year = {2011},
+isbn = {9781920682965},
+publisher = {Australian Computer Society, Inc.},
+address = {AUS},
+abstract = {The use of electronic auctions as a means of trading goods has increased year after year. eBay has gone from half a million registered users in 1998 to 88 million today. Businesses have also shown interest in using auctions. However, the traditional single good auction as used by eBay lacks the required ability to express dependencies between goods in complex procurement auctions leading to risky bidding strategies and sub optimal allocations. The use of combinatorial auctions, where bidders can place bids on combinations of goods, allows bidders to take advantage of any dependencies and auctioneers to generate optimal allocations of goods. In this paper we introduce a new algorithm for creating a combinatorial auction circuit that can be used to compute the result of a combinatorial auction by any garbled circuit auction protocol. In an electronic auction bids from competing parties are commercially sensitive information as bidders will not want their competitors finding out the value they place on a given item. Therefore, there has been considerable research into auction protocols that protect knowledge of all bids except the winning bid from everyone, including the auctioneer. The Garbled Circuit (GC) protocol as described by Naor, Pinkas and Sumner is an example of such an auction. However, it has only been used to provide privacy for single good auctions rather than combinatorial auctions and has been considered impractical for realistically sized auctions due to the protocol's communication overheads. Using our algorithm for creating combinatorial auction circuits, the GC protocol can conduct combinatorial auction while keeping losing bid values secret. We have also conducted performance measurements on both the computation and communication overhead of the GC protocol using our combinatorial auction circuit. These experiments show that the communication overhead is low enough to allow its use for realistically sized auctions (6MB for an auction with 3 goods, a maximum price of 16, and 100 bidders).},
+booktitle = {Proceedings of the Ninth Australasian Information Security Conference - Volume 116},
+pages = {67–76},
+numpages = {10},
+keywords = {security, e-commerce, distributed systems},
+location = {Perth, Australia},
+series = {AISC '11}
+}
+@ARTICLE{Bag2020,
+  author={Bag, Samiran and Hao, Feng and Shahandashti, Siamak F. and Ray, Indranil Ghosh},
+  journal={IEEE Transactions on Information Forensics and Security}, 
+  title={SEAL: Sealed-Bid Auction Without Auctioneers}, 
+  year={2020},
+  volume={15},
+  number={},
+  pages={2042-2052},
+  keywords={Protocols;Complexity theory;Privacy;Bandwidth;Generators;Observers;Government;E-auction;Vickrey auction;cryptographic protocol;multi-party computation (MPC)},
+  doi={10.1109/TIFS.2019.2955793}
+  }

@@ -1,0 +1,25 @@
+\section{Further Research}
+
+Juels, Ari and Szydlo, Michael\cite{Juels2002}指出，虽然原论文提出的拍卖机制具有较好的延展性与效率，并且能保护隐私不被泄露，但 auctioneer 和 auction issuer 可以任意地篡改拍卖结果，并且这种篡改是不可检测的。原论文的代理不经意传输（proxy oblivious transfer）可以保证 Sender、Chooser 和 Proxy 的隐私不发生泄漏的情况下完成信息传输，但显然当 Sender 将给出的两条信息的下标进行交换后，最终的输入结果也会相应的变化，这样就导致 Sender 可以实现对拍卖者报价的任意篡改。为了解决这个问题，这篇论文提出了一种新的二选一不经意传输的实现，即可验证的代理不经意传输（verifiable proxy oblivious transfer, VPOT），它可以让 Proxy 验证 Sender 发送的内容是否正确。VPOT 具体通过 Chooser 将选择 $b$ 拆分成 $b_S$ 和 $b_P$，使得 $b=b_S \oplus b_P$，然后 Chooser 将 $b_S$ 发送给 Sender，将 $b_P$ 发送给 Proxy，最终 Proxy 可以验证 Sender 发送的内容是否正确。这样，VPOT 可以保证 Sender 无法篡改拍卖者的报价。这一优化后的传输方法同样基于 auctioneer 和 auction issuer 之间不存在勾结的假设。
+
+Lipmaa, Helger and Asokan, N. and Niemi, Valtteri\cite{Lipmaa2003}指出，原论文中的协议存在 Sender 随意篡改加密电路的风险，而如果使用“cut-ant-choose”算法虽然可以检查出篡改，但是会导致效率十分低下，因此原论文建议拍卖中的第三方为权威机构，并且任何作假都会毁掉其声誉。此外，即使不使用“cut-ant-choose”算法，需要被传输的加密电路也会造成复杂度较高，巨大的信息传输量也使得离线的方法在很多场景下并不可行。并且，这一电路的设计与参与拍卖者的个数有关，因此卖家需要在拍卖之前预估这一数值。为了解决这个问题，这篇论文提出了一种新的基于同态公钥加密的拍卖方案，使得除非卖家和 A 勾结，否则拍卖结果都是正确的，而且卖家不会得到任何关于报价的信息，而 A 可以得到报价的统计信息。以及进一步的扩展可以减少 Seller 和 A 勾结造成的损害，并且可以构造 $(m + 1)$ 价的拍卖方案。这种拍卖方案在中等规模的拍卖中，卖家和拍卖机构之间的通信复杂度至少比原论文的方案低一个数量级。
+
+类似的，Abe, Masayuki and Suzuki, Koutarou\cite{Abe2002}使用同态加密的方式实现了 $(m + 1)$ 价拍卖，具体过程通过每个参与者将自己的出价 $j$ 转换为长度为 $p$ 的向量，包含 $j$ 个 $E(z)$ 和 $p-j$ 个 $E(1)$，卖家得到这些向量后将所有向量相乘，取结果的第 $j$ 位即可得到 $E(z^{n(j)})$，从而得到出价大于等于 j 的参与者的数量，从而得到最终的拍卖结果。这种拍卖方案具有较低的通信复杂度，每个参与者只需要向卖家发送一轮信息，而卖家向权威机构发送的轮数为 $O(\log p)$。
+
+Palmer, Ben and Bubendorfer, Kris and Welch, Ian\cite{Palmer2011}在原论文的基础上进行了改进，使其可以用于多件商品的组合拍卖中，并避免了过大的通信开销。论文使用了一种图结构，如图 \ref{fig:Palmer2011} 所示，节点为待拍卖的商品的子集，有向边表示商品的分配，从起点到终点的路径就表示所有商品的分配方案。基于这一图结构，对有向边上的商品使用最高价电路结构，并在中间节点上使用累加器，最后在终点上使用最高价电路结构得到最优解，使得组合拍卖可以以较小的代价运行。
+
+\begin{figure*}[h]
+    \centering
+    \includegraphics*[width=0.6\textwidth]{figure/Palmer2011.png}
+    \caption{多件商品组合拍卖电路设计方案}
+    \label{fig:Palmer2011}
+\end{figure*}
+
+Bag, Samiran and Hao, Feng and Shahandashti, Siamak F. and Ray, Indranil Ghosh\cite{Bag2020}指出，原论文需要 auction issuer 作为可信的权威机构，并且在后续的改进论文中，依旧需要一个可信的第三方机构（随机服务器，或可信的第三方硬件设备，如 Intel SGX 等），并要求其不会和拍卖者勾结。这篇论文中提出了一种拍卖方案 Self-Enforcing Auction Lot (SEAL)，如图 \ref{fig:Bag2020} 所示，这种方案不需要引入第三方，并且不需要参与者之间私密的连接。假设报价的比特数为 $c$，则全过程需要 $c$ 轮。拍卖过程分两个阶段，从最高位到最低位逐位进行，通过加密与多方计算最终计算出最高出价，并通过零知识证明保证每个拍卖者给出的价格与实际报价是一致的。这一拍卖方案也可以扩展为二价拍卖等。
+
+\begin{figure*}[h]
+    \centering
+    \includegraphics*[width=\textwidth]{figure/Bag2020.png}
+    \caption{Self-Enforcing Auction Lot (SEAL) 拍卖过程}
+    \label{fig:Bag2020}
+\end{figure*}
